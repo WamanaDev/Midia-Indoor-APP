@@ -15,21 +15,36 @@
             "topShelfWide2x": "./assets/images/icon-4640x1440.png"
           }
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
+    "name": "JP Mídia",
+    "slug": "JPMidia",
+    "orientation": "landscape",
     "android": {
+      "tvBanner": "./assets/logo512.png",
       "edgeToEdgeEnabled": true,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/logo512.png",
+        "backgroundColor": "#111827"
+      },
       "splash": {
         "image": "./assets/images/icon-1920x720.png"
-      }
+      },
+      "package": "com.android.jpmidia"
     },
     "ios": {
+      "icon": "./assets/images/icon-1280x768.png",
       "splash": {
         "image": "./assets/images/icon-1920x720.png"
       }
     },
     "newArchEnabled": true,
-    "name": "MyTVProject",
-    "slug": "MyTVProject"
+    "owner": "wictorp",
+    "extra": {
+      "eas": {
+        "projectId": "413f9f09-a782-4aa3-b952-7a7f468b70da"
+      }
+    }
   }
 }

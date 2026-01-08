@@ -1,35 +1,43 @@
 {
-  "name": "mytvproject",
-  "version": "1.0.0",
+  "name": "JPMidia",
+  "version": "1.0.1",
   "scripts": {
-    "start": "EXPO_TV=1 expo start",
-    "android": "EXPO_TV=1 expo run:android",
-    "ios": "EXPO_TV=1 expo run:ios",
+    "start": "cross-env EXPO_TV=1 expo start",
+    "android": "cross-env EXPO_TV=1 expo run:android",
+    "ios": "cross-env EXPO_TV=1 expo run:ios",
     "web": "expo start --web",
-    "prebuild:tv": "EXPO_TV=1 expo prebuild --clean",
+    "prebuild:tv": "cross-env EXPO_TV=1 expo prebuild --clean",
     "prebuild": "expo prebuild --clean"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.1",
+    "@legendapp/state": "^3.0.0-beta.42",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@supabase/supabase-js": "^2.86.0",
     "expo": "^54.0.20",
+    "expo-av": "~16.0.8",
+    "expo-file-system": "~19.0.19",
+    "expo-secure-store": "~15.0.7",
     "expo-splash-screen": "~31.0.10",
     "expo-status-bar": "~3.0.8",
+    "fast-xml-parser": "^5.3.2",
+    "he": "^1.2.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-native": "npm:react-native-tvos@0.81-stable",
-    "react-native-web": "^0.21.0"
+    "react-native": "0.81.5",
+    "react-native-get-random-values": "~1.11.0",
+    "react-native-qrcode-svg": "^6.3.20",
+    "react-native-size-matters": "^0.4.2",
+    "react-native-video": "^6.18.0",
+    "react-native-web": "^0.21.0",
+    "rss-parser": "^3.13.0"
   },
   "devDependencies": {
     "@react-native-tvos/config-tv": "^0.1.4",
     "@types/react": "~19.1.10",
+    "@types/react-native": "^0.72.8",
+    "cross-env": "^10.1.0",
     "typescript": "~5.9.2"
-  },
-  "expo": {
-    "install": {
-      "exclude": [
-        "react-native"
-      ]
-    }
   },
   "private": true
 }
