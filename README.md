@@ -1,45 +1,123 @@
-# TV Example
+# 📱 JP Mídia Indoor Player
 
-Creates a project that can build for Apple TV and Android TV targets.
+Aplicativo desenvolvido em **React Native** com **Expo**, responsável pela reprodução dos conteúdos enviados pelo **JP Mídia Indoor Dashboard**.
 
-This project uses
+O Player foi projetado para transformar dispositivos Android em players de **Digital Signage**, exibindo imagens e vídeos em tela cheia com sincronização automática das campanhas publicadas no painel administrativo.
 
-- the [React Native TV fork](https://github.com/react-native-tvos/react-native-tvos), which supports both phone (Android and iOS) and TV (Android TV and Apple TV) targets
-- the [React Native TV config plugin](https://github.com/react-native-tvos/config-tv/tree/main/packages/config-tv) to allow Expo prebuild to modify the project's native files for TV builds
+---
 
-## 🚀 How to use
+## 🌐 Projeto Relacionado
 
-#### Creating a new project
+O gerenciamento dos conteúdos é realizado através do Dashboard Web.
 
-- Create a project: `npx create-expo-app -e with-tv`
-- `cd` into the project
+* **Dashboard (Demo):** https://jpdash20.vercel.app/
+* **Repositório do Dashboard:** https://github.com/WamanaDev/JP-Midia-Indoor
 
-- For TV development:
+---
 
-```sh
-yarn
-yarn prebuild:tv # Executes clean Expo prebuild with TV modifications
-yarn ios # Build and run for Apple TV
-yarn android # Build for Android TV
-yarn web # Run the project on web from localhost
+## ✨ Funcionalidades
+
+* 📺 Reprodução automática de imagens e vídeos.
+* 🔄 Sincronização com o Dashboard.
+* 🌐 Download automático dos conteúdos.
+* ⚡ Atualização remota das campanhas.
+* 🖥️ Exibição em tela cheia.
+* 📱 Desenvolvido com React Native e Expo.
+* 🔁 Reprodução contínua das mídias.
+* 📡 Comunicação com a API do sistema.
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+* **React Native**
+* **Expo**
+* **JavaScript (ES6+)**
+* **Expo FileSystem**
+* **Expo AV / Expo Video**
+* **AsyncStorage**
+* **CSS-in-JS / StyleSheet**
+
+---
+
+## 🚀 Como Executar
+
+### Pré-requisitos
+
+Antes de iniciar, você precisará ter instalado:
+
+* Node.js
+* Expo CLI (ou utilizar `npx expo`)
+* Expo Go **ou** um dispositivo Android/iOS
+
+### Clone o projeto
+
+```bash
+git clone https://github.com/WamanaDev/Midia-Indoor-APP.git
 ```
-- For mobile development:
 
-```sh
-yarn
-yarn prebuild # Executes Expo prebuild with no TV modifications
-yarn ios # Build and run for iOS
-yarn android # Build for Android mobile
-yarn web # Run the project on web from localhost
+### Entre na pasta
+
+```bash
+cd Midia-Indoor-APP
 ```
-> **_NOTE:_**
-> Setting the environment variable `EXPO_TV=1` enables the `@react-native-tvos/config-tv` plugin to modify the project for TV.
-> This can also be done by setting the parameter `isTV` to true in the `app.json`.
 
-#### TV specific file extensions
+### Instale as dependências
 
-This project contains an [example Metro configuration](./metro.config.js) that allows Metro to resolve application source files with TV-specific code, indicated by specific file extensions (`*.ios.tv.tsx`, `*.android.tv.tsx`, `*.tv.tsx`). This config is not enabled by default, since it will impact bundling performance, but is available for developers who need this capability.
+```bash
+npm install
+```
 
-#### TV specific app icons and banners
+### Execute o projeto
 
-This project contains placeholder images for the Android TV banner and for Apple TV brand assets (app icon and top shelf images). The `config-tv` plugin will use these images to construct the required native image files and make the right modifications in project files. You can simply replace these images with your own app images. Note that for Apple TV, the images must be the exact sizes indicated.
+```bash
+npx expo start
+```
+
+Escaneie o QR Code utilizando o **Expo Go** ou execute o projeto em um emulador Android/iOS.
+
+---
+
+## 🔄 Fluxo de Funcionamento
+
+```text
+Dashboard Web
+        │
+        ▼
+API do Sistema
+        │
+        ▼
+JP Mídia Indoor Player
+        │
+        ▼
+TV • Monitor • Android Box • Tablet
+```
+
+---
+
+## 🎯 Casos de Uso
+
+O aplicativo é ideal para:
+
+* Lojas
+* Restaurantes
+* Clínicas
+* Academias
+* Farmácias
+* Recepções
+* Empresas
+* Totens de Atendimento
+* TVs Comerciais
+* Painéis Informativos
+
+---
+
+## 👨‍💻 Autor
+
+Desenvolvido por **WamanaDev**.
+
+### 🔗 Links
+
+* **GitHub:** https://github.com/WamanaDev
+* **Dashboard Web:** https://github.com/WamanaDev/JP-Midia-Indoor
+* **Demo:** https://jpdash20.vercel.app/
