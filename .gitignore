@@ -22,7 +22,8 @@ web-build/
 
 # macOS
 .DS_Store
-
+CLAUDE.md
+efeitoseitems.md
 # Windows
 Thumbs.db
 desktop.ini
