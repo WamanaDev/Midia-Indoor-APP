@@ -6,6 +6,7 @@ import React, {
   useState,
 } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE } from "./api";
 
 const NEWS_CACHE_KEY = "cached_news_v3";
 const NEWS_TIMESTAMP_KEY = "cached_news_ts_v3";
@@ -75,7 +76,7 @@ export function NewsProvider({
 
     try {
       const body = { news: feeds, limit, shuffle: true };
-      const res = await fetch("https://jpdash20.vercel.app/api/player/news", {
+      const res = await fetch(`${API_BASE}/api/player/news`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

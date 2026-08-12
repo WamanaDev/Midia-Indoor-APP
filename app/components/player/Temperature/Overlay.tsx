@@ -1,40 +1,37 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Animated, Text } from "react-native";
 import { useTVScale } from "../../../hook/Scale";
+import { useWeather } from "../../../hook/useWeather";
 import { useRotatingIndex } from "../shared/useRotatingIndex";
 import { getCornerStyle } from "../shared/cornerPosition";
-import { ClockFace } from "./ClockFace";
-import { TimeConfig } from "./types";
+import { TemperatureFace } from "./TemperatureFace";
+import { WeatherConfig } from "./types";
 
 /**
- * Hora em modo overlay: fica num dos 4 cantos. Se houver mais de um relógio,
- * revezam no mesmo canto a cada 6s (useRotatingIndex).
+ * Clima em modo overlay: fica num dos 4 cantos. Se houver mais de uma
+ * localidade, revezam no mesmo canto a cada 6s (useRotatingIndex).
+ * Se `locations` estiver vazio, não renderiza nada (fiel ao spec).
  */
-export function TimeOverlay({
+export function TemperatureOverlay({
   config,
   reduceMotion,
 }: {
-  config: TimeConfig;
+  config: WeatherConfig;
   reduceMotion: boolean;
 }) {
   const scale = useTVScale();
-  const [now, setNow] = useState(new Date());
-  const clocks = config.clocks || [];
+  const locations = config.locations || [];
+  const temperatures = useWeather(locations);
   const { index, opacity, translateY } = useRotatingIndex(
-    clocks.length,
+    locations.length,
     6000,
     600,
     scale(6)
   );
 
-  useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  if (clocks.length === 0) return null;
-  const clock = clocks[index];
-  if (!clock) return null;
+  if (locations.length === 0) return null;
+  const loc = locations[index];
+  if (!loc) return null;
 
   return (
     <Animated.View
@@ -51,12 +48,12 @@ export function TimeOverlay({
           textTransform: "uppercase",
         }}
       >
-        {clock.label}
+        {loc.label}
       </Text>
-      <ClockFace
+      <TemperatureFace
         style={config.style}
-        clock={clock}
-        now={now}
+        value={temperatures[loc.id] ?? null}
+        unit={loc.unit || "C"}
         reduceMotion={reduceMotion}
       />
     </Animated.View>

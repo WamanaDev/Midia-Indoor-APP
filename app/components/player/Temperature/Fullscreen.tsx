@@ -1,30 +1,27 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useTVScale } from "../../../hook/Scale";
-import { ClockFace } from "./ClockFace";
-import { TimeConfig } from "./types";
+import { useWeather } from "../../../hook/useWeather";
+import { TemperatureFace } from "./TemperatureFace";
+import { WeatherConfig } from "./types";
 
 /**
- * Hora em tela cheia: todos os relógios ao mesmo tempo, lado a lado
- * (`layout: horizontal`) ou empilhados (`layout: vertical`, padrão).
+ * Clima em tela cheia: todas as localidades ao mesmo tempo, lado a lado
+ * (`layout: horizontal`) ou empilhadas (`layout: vertical`, padrão). Se
+ * `locations` estiver vazio, não renderiza nada.
  */
-export function TimeNotOverlay({
+export function TemperatureFullscreen({
   config,
   reduceMotion,
 }: {
-  config: TimeConfig;
+  config: WeatherConfig;
   reduceMotion: boolean;
 }) {
   const scale = useTVScale();
-  const [now, setNow] = useState(new Date());
-  const clocks = config.clocks || [];
+  const locations = config.locations || [];
+  const temperatures = useWeather(locations);
 
-  useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  if (clocks.length === 0) return null;
+  if (locations.length === 0) return null;
 
   return (
     <View style={styles.fullscreen}>
@@ -36,8 +33,8 @@ export function TimeNotOverlay({
           justifyContent: "center",
         }}
       >
-        {clocks.map((clock) => (
-          <View key={clock.id} style={{ alignItems: "center", gap: scale(10) }}>
+        {locations.map((loc) => (
+          <View key={loc.id} style={{ alignItems: "center", gap: scale(10) }}>
             <Text
               style={{
                 fontSize: scale(24),
@@ -45,12 +42,12 @@ export function TimeNotOverlay({
                 textTransform: "uppercase",
               }}
             >
-              {clock.label}
+              {loc.label}
             </Text>
-            <ClockFace
+            <TemperatureFace
               style={config.style}
-              clock={clock}
-              now={now}
+              value={temperatures[loc.id] ?? null}
+              unit={loc.unit || "C"}
               reduceMotion={reduceMotion}
             />
           </View>

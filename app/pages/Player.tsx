@@ -9,16 +9,45 @@ import { downloadAndCache } from "../hook/CacheMedia";
 import { useTVScale } from "../hook/Scale";
 
 import CustomLoader from "../components/Loading";
-import { Temperature } from "../components/player/Temperature";
+import { DocumentSlide } from "../components/player/Document/DocumentSlide";
+import { TemperatureOverlay } from "../components/player/Temperature/Overlay";
+import { TemperatureFullscreen } from "../components/player/Temperature/Fullscreen";
 import { TimeNotOverlay } from "../components/player/Hours/NotOverlay";
 import { TimeOverlay } from "../components/player/Hours/Overlay";
 import { NewsNotOverlay } from "../components/News/NotOverlay";
 import { NewsOverlay } from "../components/News/Overlay";
 import { NewsProvider, useNews } from "../utils/NewsProvider";
+import { useReduceMotion } from "../hook/useReduceMotion";
+
 const NewsOverlayWrapper = React.memo(() => {
   const { items } = useNews();
   if (!items || items.length === 0) return null;
   return <NewsOverlay items={items} />;
+});
+
+// Notícia em tela cheia: o wrapper só existe na árvore enquanto o item de
+// notícia é o `currentItem` da rotação, então cada vez que ele "entra na
+// rotação" o componente remonta e sorteia uma notícia nova — sem ficar
+// trocando sozinho enquanto está na tela.
+const NewsFullscreenWrapper = React.memo(function NewsFullscreenWrapper() {
+  const { items } = useNews();
+  const [current, setCurrent] = useState<any>(null);
+  const picked = useRef(false);
+
+  useEffect(() => {
+    if (!picked.current && items.length > 0) {
+      const random = items[Math.floor(Math.random() * items.length)];
+      setCurrent({
+        ...random,
+        vehicle: random.source,
+        localImage: random.localImage || random.image,
+      });
+      picked.current = true;
+    }
+  }, [items]);
+
+  if (!current) return null;
+  return <NewsNotOverlay item={current} />;
 });
 export default function Player({
   jwt,
@@ -28,6 +57,7 @@ export default function Player({
   setJwt: (jwt: string | null) => void;
 }) {
   const styles = stylesPlayer();
+  const reduceMotion = useReduceMotion();
   const [loading, setLoading] = useState(true);
   const [playlistItems, setPlaylistItems] = useState<any[]>([]);
   const [cachedPlaylist, setCachedPlaylist] = useState<any[]>([]);
@@ -199,7 +229,9 @@ export default function Player({
       useNativeDriver: true,
     }).start();
 
-    if (item.type === "video") return;
+    // Vídeo avança sozinho no onEnd; documento pagina internamente e só
+    // avança pro próximo item depois da última página (onFinished).
+    if (item.type === "video" || item.type === "document") return;
 
     const durationMs = (item.duration_override ?? 8) * 1000;
     const fadeDuration = 400;
@@ -245,15 +277,13 @@ export default function Player({
   const temperatureOverlay = cachedPlaylist.filter(
     (x) => x.type === "temperature" && (x.config || {}).overlay
   );
-  const newsOverlayItem = cachedPlaylist.find((x) => x.type === "news");
+  const newsItem = cachedPlaylist.find((x) => x.type === "news");
+  const isNewsOverlay = !!newsItem?.config?.overlay;
   const timeOverlay = cachedPlaylist.filter(
     (x) => x.type === "hours" && (x.config || {}).overlay
   );
-  const timeNotOverlay = cachedPlaylist.filter(
-    (x) => x.type === "hours" && !(x.config || {}).overlay
-  );
 
-  const feeds = newsOverlayItem?.config?.news ?? {};
+  const feeds = newsItem?.config?.news ?? {};
 
   // ===============================
   // 6️⃣ Player Rendering
@@ -284,32 +314,55 @@ export default function Player({
           />
         )}
 
-        {currentItem?.type === "news" && <NewsNotOverlay item={currentItem} />}
-        {timeNotOverlay.map((item) => (
-          <TimeNotOverlay key={item.id} config={item.config} />
-        ))}
+        {currentItem?.type === "document" && currentItem?.localUri && (
+          <DocumentSlide
+            key={currentItem.id}
+            uri={currentItem.localUri}
+            durationOverride={currentItem.duration_override}
+            onFinished={() =>
+              setActiveIndex((p) =>
+                rotatingItems.length <= 1 ? p : (p + 1) % rotatingItems.length
+              )
+            }
+          />
+        )}
+
+        {currentItem?.type === "news" && <NewsFullscreenWrapper />}
+        {currentItem?.type === "hours" && (
+          <TimeNotOverlay
+            config={currentItem.config}
+            reduceMotion={reduceMotion}
+          />
+        )}
+        {currentItem?.type === "temperature" && (
+          <TemperatureFullscreen
+            config={currentItem.config || {}}
+            reduceMotion={reduceMotion}
+          />
+        )}
       </Animated.View>
 
       {/* Overlays montados apenas uma vez */}
-      <NewsOverlayWrapper />
+      {isNewsOverlay && <NewsOverlayWrapper />}
       {temperatureOverlay.map((item) => (
-        <Temperature
+        <TemperatureOverlay
           key={item.id}
-          image={item.media_files?.storage_path}
           config={item.config || {}}
+          reduceMotion={reduceMotion}
         />
       ))}
       {timeOverlay.map((item) => (
-        <TimeOverlay key={item.id} config={item.config} />
+        <TimeOverlay
+          key={item.id}
+          config={item.config}
+          reduceMotion={reduceMotion}
+        />
       ))}
     </View>
   );
 
   return (
-    <NewsProvider
-      feeds={feeds}
-      overlay={newsOverlayItem?.config?.overlay ?? false}
-    >
+    <NewsProvider feeds={feeds} overlay={isNewsOverlay}>
       <RenderPlayer />
     </NewsProvider>
   );
