@@ -19,10 +19,11 @@
       "expo-secure-store"
     ],
     "name": "JP Mídia",
-    "slug": "JPMidia",
+    "slug": "jpmidiaapp",
     "orientation": "landscape",
+    "icon": "./assets/images/logo512.png",
     "android": {
-      "tvBanner": "./assets/logo512.png",
+      "tvBanner": "./assets/mipmap-xxxhdpi/ic_launcher.png",
       "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo512.png",
@@ -31,10 +32,10 @@
       "splash": {
         "image": "./assets/images/icon-1920x720.png"
       },
-      "package": "com.android.jpmidia"
+      "package": "com.wamanadev.jpmidia"
     },
     "ios": {
-      "icon": "./assets/images/icon-1280x768.png",
+      "icon": "./assets/images/logo512.png",
       "splash": {
         "image": "./assets/images/icon-1920x720.png"
       }
@@ -43,7 +44,7 @@
     "owner": "wictorp",
     "extra": {
       "eas": {
-        "projectId": "413f9f09-a782-4aa3-b952-7a7f468b70da"
+        "projectId": "af46d5b8-4ed7-4256-973f-acdbe4744e24"
       }
     }
   }
