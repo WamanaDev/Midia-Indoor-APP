@@ -16,26 +16,50 @@ import { TimeNotOverlay } from "../components/player/Hours/NotOverlay";
 import { TimeOverlay } from "../components/player/Hours/Overlay";
 import { NewsNotOverlay } from "../components/News/NotOverlay";
 import { NewsOverlay } from "../components/News/Overlay";
+import { NEWS_ROTATE_TEMPLATES } from "../components/News/fullscreen/registry";
+import { NEWS_TOGETHER_TEMPLATES } from "../components/News/fullscreen/together";
+import {
+  NewsRotateTemplateId,
+  NewsTogetherTemplateId,
+  NEWS_TOGETHER_TEMPLATE_IDS,
+} from "../components/News/fullscreen/types";
 import { NewsProvider, useNews } from "../utils/NewsProvider";
 import { useReduceMotion } from "../hook/useReduceMotion";
+import { useEmergencyAlert } from "../hook/useEmergencyAlert";
+import { EmergencyAlertOverlay } from "../components/EmergencyAlert/EmergencyAlertOverlay";
 
-const NewsOverlayWrapper = React.memo(() => {
+const NewsOverlayWrapper = React.memo(({ config }: { config: any }) => {
   const { items } = useNews();
   if (!items || items.length === 0) return null;
-  return <NewsOverlay items={items} />;
+  return <NewsOverlay items={items} interval={config?.interval} style={config?.style} />;
 });
 
-// Notícia em tela cheia: o wrapper só existe na árvore enquanto o item de
-// notícia é o `currentItem` da rotação, então cada vez que ele "entra na
-// rotação" o componente remonta e sorteia uma notícia nova — sem ficar
-// trocando sozinho enquanto está na tela.
-const NewsFullscreenWrapper = React.memo(function NewsFullscreenWrapper() {
+/**
+ * Notícia em tela cheia. Dois modos (§2.4/§5.5/§5.6):
+ * - "rodar" (sem `fullscreenStyle` ou um template de §5.5): sorteia UMA
+ *   notícia só quando o componente entra na árvore (o wrapper remonta a
+ *   cada vez que o item de notícia "entra na rotação" — não troca sozinho
+ *   enquanto está em tela).
+ * - "todos juntos" (template de §5.6): sorteia 3 notícias, refazendo a
+ *   escolha toda vez que `items` (config.news) muda, não só ao montar.
+ */
+const NewsFullscreenWrapper = React.memo(function NewsFullscreenWrapper({
+  config,
+  reduceMotion,
+}: {
+  config: any;
+  reduceMotion: boolean;
+}) {
   const { items } = useNews();
+  const fullscreenStyle = config?.fullscreenStyle;
+  const isTogether = NEWS_TOGETHER_TEMPLATE_IDS.includes(fullscreenStyle);
+
   const [current, setCurrent] = useState<any>(null);
   const picked = useRef(false);
+  const [togetherItems, setTogetherItems] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!picked.current && items.length > 0) {
+    if (!picked.current && !isTogether && items.length > 0) {
       const random = items[Math.floor(Math.random() * items.length)];
       setCurrent({
         ...random,
@@ -44,9 +68,28 @@ const NewsFullscreenWrapper = React.memo(function NewsFullscreenWrapper() {
       });
       picked.current = true;
     }
-  }, [items]);
+  }, [items, isTogether]);
+
+  useEffect(() => {
+    if (!isTogether) return;
+    const shuffled = [...items].sort(() => Math.random() - 0.5);
+    setTogetherItems(shuffled.slice(0, 3));
+  }, [items, isTogether]);
+
+  if (isTogether) {
+    if (togetherItems.length === 0) return null;
+    const Template = NEWS_TOGETHER_TEMPLATES[fullscreenStyle as NewsTogetherTemplateId];
+    if (!Template) return null;
+    return <Template items={togetherItems} reduceMotion={reduceMotion} />;
+  }
 
   if (!current) return null;
+
+  const RotateTemplate = fullscreenStyle
+    ? NEWS_ROTATE_TEMPLATES[fullscreenStyle as NewsRotateTemplateId]
+    : undefined;
+  if (RotateTemplate) return <RotateTemplate item={current} reduceMotion={reduceMotion} />;
+
   return <NewsNotOverlay item={current} />;
 });
 export default function Player({
@@ -58,6 +101,7 @@ export default function Player({
 }) {
   const styles = stylesPlayer();
   const reduceMotion = useReduceMotion();
+  const emergencyAlert = useEmergencyAlert();
   const [loading, setLoading] = useState(true);
   const [playlistItems, setPlaylistItems] = useState<any[]>([]);
   const [cachedPlaylist, setCachedPlaylist] = useState<any[]>([]);
@@ -306,6 +350,7 @@ export default function Player({
             style={styles.mediaFill}
             resizeMode="cover"
             muted
+            paused={!!emergencyAlert}
             repeat={rotatingItems.length <= 1}
             onEnd={() => {
               if (rotatingItems.length > 1)
@@ -327,7 +372,9 @@ export default function Player({
           />
         )}
 
-        {currentItem?.type === "news" && <NewsFullscreenWrapper />}
+        {currentItem?.type === "news" && (
+          <NewsFullscreenWrapper config={currentItem.config} reduceMotion={reduceMotion} />
+        )}
         {currentItem?.type === "hours" && (
           <TimeNotOverlay
             config={currentItem.config}
@@ -343,7 +390,7 @@ export default function Player({
       </Animated.View>
 
       {/* Overlays montados apenas uma vez */}
-      {isNewsOverlay && <NewsOverlayWrapper />}
+      {isNewsOverlay && <NewsOverlayWrapper config={newsItem?.config} />}
       {temperatureOverlay.map((item) => (
         <TemperatureOverlay
           key={item.id}
@@ -358,6 +405,8 @@ export default function Player({
           reduceMotion={reduceMotion}
         />
       ))}
+
+      {emergencyAlert && <EmergencyAlertOverlay alert={emergencyAlert} />}
     </View>
   );
 
