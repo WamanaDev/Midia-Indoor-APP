@@ -15,7 +15,8 @@ export interface TimeConfig {
   overlay: boolean;
   position?: "top-left" | "top-right" | "bottom-left" | "bottom-right" | "";
   style: string;
-  layout?: "vertical" | "horizontal";
+  layout?: "vertical" | "horizontal" | "rotate";
+  fullscreenStyle?: string;
   clocks: ClockConfig[];
 }
 

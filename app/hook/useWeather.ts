@@ -11,8 +11,19 @@ export type WeatherLocation = {
   unit?: "C" | "F";
 };
 
-type CacheEntry = { temperature: number | null; ts: number };
-type Cache = Record<string, CacheEntry>;
+export type WeatherReading = {
+  temperature: number | null;
+  weathercode: number | null;
+  isDay: boolean;
+};
+
+type Cache = Record<string, WeatherReading>;
+
+const EMPTY_READING: WeatherReading = {
+  temperature: null,
+  weathercode: null,
+  isDay: true,
+};
 
 async function loadCache(): Promise<Cache> {
   const raw = await AsyncStorage.getItem(CACHE_KEY);
@@ -20,14 +31,14 @@ async function loadCache(): Promise<Cache> {
 }
 
 /**
- * Busca a temperatura atual de cada localidade via
+ * Busca o clima atual de cada localidade via
  * GET /api/player/weather?lat=&lon=&unit=, a cada 5 minutos, com cache em
  * AsyncStorage (mesmo padrão de app/utils/NewsProvider.tsx).
+ * Além da temperatura, traz `weathercode` e `isDay` (§6.1 da spec) pro
+ * ícone dinâmico de condição do tempo.
  */
 export function useWeather(locations: WeatherLocation[]) {
-  const [temperatures, setTemperatures] = useState<
-    Record<string, number | null>
-  >({});
+  const [readings, setReadings] = useState<Record<string, WeatherReading>>({});
   const lock = useRef(false);
   const key = JSON.stringify(
     (locations || []).map((l) => ({
@@ -40,7 +51,7 @@ export function useWeather(locations: WeatherLocation[]) {
 
   useEffect(() => {
     if (!locations || locations.length === 0) {
-      setTemperatures({});
+      setReadings({});
       return;
     }
 
@@ -55,7 +66,7 @@ export function useWeather(locations: WeatherLocation[]) {
 
         const entries = await Promise.all(
           locations.map(async (loc) => {
-            if (!loc.location) return [loc.id, null] as const;
+            if (!loc.location) return [loc.id, EMPTY_READING] as const;
             const unit = loc.unit || "C";
 
             try {
@@ -63,19 +74,24 @@ export function useWeather(locations: WeatherLocation[]) {
                 `${API_BASE}/api/player/weather?lat=${loc.location.lat}&lon=${loc.location.lon}&unit=${unit}`
               );
               const data = await res.json();
-              const temperature =
-                typeof data?.temperature === "number" ? data.temperature : null;
-              cache[loc.id] = { temperature, ts: Date.now() };
-              return [loc.id, temperature] as const;
+              const reading: WeatherReading = {
+                temperature:
+                  typeof data?.temperature === "number" ? data.temperature : null,
+                weathercode:
+                  typeof data?.weathercode === "number" ? data.weathercode : null,
+                isDay: data?.isDay !== false,
+              };
+              cache[loc.id] = reading;
+              return [loc.id, reading] as const;
             } catch (err) {
               console.log("useWeather fetch error:", err);
-              return [loc.id, cache[loc.id]?.temperature ?? null] as const;
+              return [loc.id, cache[loc.id] ?? EMPTY_READING] as const;
             }
           })
         );
 
         await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(cache));
-        if (!cancelled) setTemperatures(Object.fromEntries(entries));
+        if (!cancelled) setReadings(Object.fromEntries(entries));
       } finally {
         lock.current = false;
       }
@@ -84,9 +100,9 @@ export function useWeather(locations: WeatherLocation[]) {
     (async () => {
       const cache = await loadCache();
       const cached = Object.fromEntries(
-        locations.map((l) => [l.id, cache[l.id]?.temperature ?? null])
+        locations.map((l) => [l.id, cache[l.id] ?? EMPTY_READING])
       );
-      if (!cancelled) setTemperatures(cached);
+      if (!cancelled) setReadings(cached);
       await fetchAll();
     })();
 
@@ -97,5 +113,5 @@ export function useWeather(locations: WeatherLocation[]) {
     };
   }, [key]);
 
-  return temperatures;
+  return readings;
 }

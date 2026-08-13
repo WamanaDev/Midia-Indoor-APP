@@ -4,7 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useTVScale } from "../../../../hook/Scale";
 import { ClockStyleProps } from "../types";
 
-export type AnalogVariant = "minimal" | "neon" | "corporate" | "tech" | "dark";
+export type AnalogVariant = "minimal" | "neon" | "corporate";
 
 interface Theme {
   background: string | null;
@@ -20,21 +20,6 @@ const THEME: Record<AnalogVariant, Theme> = {
   minimal: { background: null, border: "rgba(255,255,255,0.9)", hand: "#fff", center: "#fff" },
   neon: { background: "#000", border: "#22d3ee", hand: "#22d3ee", center: "#22d3ee", glow: 8 },
   corporate: { background: "#fff", border: "#d1d5db", hand: "#374151", center: "#374151" },
-  tech: {
-    background: "#0f172a",
-    border: "#334155",
-    hand: "#22d3ee",
-    center: "#22d3ee",
-    glow: 6,
-    ticks: true,
-  },
-  dark: {
-    background: null,
-    gradient: ["#000000", "#1f2937"],
-    border: "rgba(255,255,255,0.4)",
-    hand: "#fff",
-    center: "#fff",
-  },
 };
 
 export function Analog({

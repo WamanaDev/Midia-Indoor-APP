@@ -2,10 +2,11 @@ import React from "react";
 import { Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTVScale } from "../../../../hook/Scale";
+import { weatherIcon } from "../../../../utils/weatherCondition";
 import { formatTemperature } from "../format";
 import { TemperatureStyleProps } from "../types";
 
-export function Card({ value, unit }: TemperatureStyleProps) {
+export function Card({ value, unit, condition, isDay }: TemperatureStyleProps) {
   const scale = useTVScale();
   return (
     <View
@@ -18,7 +19,7 @@ export function Card({ value, unit }: TemperatureStyleProps) {
       }}
     >
       <MaterialCommunityIcons
-        name="thermometer"
+        name={weatherIcon(condition ?? "clear", isDay ?? true) as any}
         size={scale(40)}
         color="#374151"
       />

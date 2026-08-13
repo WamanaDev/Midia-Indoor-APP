@@ -1,4 +1,8 @@
 import React from "react";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTVScale } from "../../../hook/Scale";
+import { CHIP_STYLES, NEW_CHIP_STYLE_IDS, NewChipStyleId } from "../shared/chipStyles";
+import { weatherIcon } from "../../../utils/weatherCondition";
 import { Minimal } from "./styles/Minimal";
 import { Badge } from "./styles/Badge";
 import { Card } from "./styles/Card";
@@ -10,8 +14,8 @@ import { Corporate } from "./styles/Corporate";
 import { Tech } from "./styles/Tech";
 import { Dark } from "./styles/Dark";
 import { Gauge } from "./styles/Gauge";
-import { Wave } from "./styles/Wave";
 import { Sphere } from "./styles/Sphere";
+import { formatTemperature } from "./format";
 import { TemperatureStyleProps } from "./types";
 
 export type TemperatureStyleId =
@@ -26,7 +30,6 @@ export type TemperatureStyleId =
   | "tech"
   | "dark"
   | "gauge"
-  | "wave"
   | "sphere";
 
 const STYLES: Record<TemperatureStyleId, React.ComponentType<TemperatureStyleProps>> = {
@@ -41,13 +44,34 @@ const STYLES: Record<TemperatureStyleId, React.ComponentType<TemperatureStylePro
   tech: Tech,
   dark: Dark,
   gauge: Gauge,
-  wave: Wave,
   sphere: Sphere,
 };
 
-export function TemperatureFace(
-  props: TemperatureStyleProps & { style: string }
-) {
+export function TemperatureFace(props: TemperatureStyleProps & { style: string }) {
+  if (NEW_CHIP_STYLE_IDS.includes(props.style as NewChipStyleId)) {
+    return <ChipTemperature {...props} />;
+  }
+
   const Component = STYLES[props.style as TemperatureStyleId] || Card;
-  return <Component value={props.value} unit={props.unit} reduceMotion={props.reduceMotion} />;
+  return <Component {...props} />;
+}
+
+function ChipTemperature(props: TemperatureStyleProps & { style: string }) {
+  const scale = useTVScale();
+  const Component = CHIP_STYLES[props.style as NewChipStyleId];
+  const icon =
+    props.style === "icon-tight" ? (
+      <MaterialCommunityIcons
+        name={weatherIcon(props.condition ?? "clear", props.isDay ?? true) as any}
+        size={scale(20)}
+        color="#fff"
+      />
+    ) : undefined;
+  return (
+    <Component
+      value={formatTemperature(props.value, props.unit)}
+      icon={icon}
+      size={props.size ?? "lg"}
+    />
+  );
 }

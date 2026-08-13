@@ -4,6 +4,7 @@ import { useTVScale } from "../../../hook/Scale";
 import { useWeather } from "../../../hook/useWeather";
 import { useRotatingIndex } from "../shared/useRotatingIndex";
 import { getCornerStyle } from "../shared/cornerPosition";
+import { conditionFromCode } from "../../../utils/weatherCondition";
 import { TemperatureFace } from "./TemperatureFace";
 import { WeatherConfig } from "./types";
 
@@ -21,7 +22,7 @@ export function TemperatureOverlay({
 }) {
   const scale = useTVScale();
   const locations = config.locations || [];
-  const temperatures = useWeather(locations);
+  const readings = useWeather(locations);
   const { index, opacity, translateY } = useRotatingIndex(
     locations.length,
     6000,
@@ -32,6 +33,7 @@ export function TemperatureOverlay({
   if (locations.length === 0) return null;
   const loc = locations[index];
   if (!loc) return null;
+  const reading = readings[loc.id];
 
   return (
     <Animated.View
@@ -52,9 +54,12 @@ export function TemperatureOverlay({
       </Text>
       <TemperatureFace
         style={config.style}
-        value={temperatures[loc.id] ?? null}
+        value={reading?.temperature ?? null}
         unit={loc.unit || "C"}
         reduceMotion={reduceMotion}
+        condition={conditionFromCode(reading?.weathercode ?? null)}
+        isDay={reading?.isDay ?? true}
+        size="sm"
       />
     </Animated.View>
   );

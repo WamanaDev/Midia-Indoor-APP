@@ -6,6 +6,7 @@ import { ClockStyleProps } from "../types";
 
 export function Card({ value }: ClockStyleProps) {
   const scale = useTVScale();
+  const isDay = value.hours >= 6 && value.hours < 18;
   return (
     <View
       style={{
@@ -17,7 +18,7 @@ export function Card({ value }: ClockStyleProps) {
       }}
     >
       <MaterialCommunityIcons
-        name="clock-outline"
+        name={isDay ? "weather-sunny" : "weather-night"}
         size={scale(40)}
         color="#374151"
       />

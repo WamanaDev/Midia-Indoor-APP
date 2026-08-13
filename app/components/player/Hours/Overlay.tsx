@@ -58,6 +58,7 @@ export function TimeOverlay({
         clock={clock}
         now={now}
         reduceMotion={reduceMotion}
+        size="sm"
       />
     </Animated.View>
   );

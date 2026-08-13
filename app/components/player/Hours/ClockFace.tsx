@@ -1,4 +1,7 @@
 import React from "react";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTVScale } from "../../../hook/Scale";
+import { CHIP_STYLES, NEW_CHIP_STYLE_IDS, NewChipStyleId } from "../shared/chipStyles";
 import { Minimal } from "./styles/Minimal";
 import { Badge } from "./styles/Badge";
 import { Card } from "./styles/Card";
@@ -7,7 +10,6 @@ import { Glass } from "./styles/Glass";
 import { Flip } from "./styles/Flip";
 import { Pulse } from "./styles/Pulse";
 import { Analog } from "./styles/Analog";
-import { Orbit } from "./styles/Orbit";
 import { Flip3D } from "./styles/Flip3D";
 import { Sphere } from "./styles/Sphere";
 import { getClockValue } from "./clockMath";
@@ -18,18 +20,29 @@ interface ClockFaceProps {
   clock: ClockConfig;
   now: Date;
   reduceMotion: boolean;
+  size?: "sm" | "lg";
 }
 
-export function ClockFace({ style, clock, now, reduceMotion }: ClockFaceProps) {
+export function ClockFace({ style, clock, now, reduceMotion, size = "lg" }: ClockFaceProps) {
+  const scale = useTVScale();
   const value = getClockValue(now, clock);
 
-  if (style.startsWith("analog-")) {
-    const variant = style.replace("analog-", "") as
-      | "minimal"
-      | "neon"
-      | "corporate"
-      | "tech"
-      | "dark";
+  if (NEW_CHIP_STYLE_IDS.includes(style as NewChipStyleId)) {
+    const Component = CHIP_STYLES[style as NewChipStyleId];
+    const isDay = value.hours >= 6 && value.hours < 18;
+    const icon =
+      style === "icon-tight" ? (
+        <MaterialCommunityIcons
+          name={isDay ? "weather-sunny" : "weather-night"}
+          size={scale(20)}
+          color="#fff"
+        />
+      ) : undefined;
+    return <Component value={value.text} icon={icon} size={size} />;
+  }
+
+  if (style === "analog-minimal" || style === "analog-neon" || style === "analog-corporate") {
+    const variant = style.replace("analog-", "") as "minimal" | "neon" | "corporate";
     return <Analog value={value} reduceMotion={reduceMotion} variant={variant} />;
   }
 
@@ -46,8 +59,6 @@ export function ClockFace({ style, clock, now, reduceMotion }: ClockFaceProps) {
       return <Flip value={value} reduceMotion={reduceMotion} />;
     case "pulse":
       return <Pulse value={value} reduceMotion={reduceMotion} />;
-    case "orbit":
-      return <Orbit value={value} reduceMotion={reduceMotion} />;
     case "flip3d":
       return <Flip3D value={value} reduceMotion={reduceMotion} />;
     case "sphere":
